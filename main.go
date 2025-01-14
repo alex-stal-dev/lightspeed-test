@@ -11,7 +11,8 @@ import (
 )
 
 func main() {
-	fileName := "./sample-ips"
+	fileName := "./random_ipv4_addresses.txt"
+
 	file, _ := os.Open(fileName)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
@@ -20,20 +21,24 @@ func main() {
 	ipBitSet := make([]bool, math.MaxUint32)
 
 	for scanner.Scan() {
-		line := scanner.Text()
-
-		ipAsInt, err := ipStringToInt(line)
-
-		if err == nil {
-			ipExists := ipBitSet[ipAsInt]
-			if !ipExists {
-				uniqueCounter++
-				ipBitSet[ipAsInt] = true
-			}
+		isUnique, ipAsInt := isIPUnique(scanner.Text(), ipBitSet)
+		if isUnique {
+			uniqueCounter++
+			ipBitSet[ipAsInt] = true
 		}
 	}
 
 	fmt.Println("The number of unique addresses is ", uniqueCounter)
+}
+
+func isIPUnique(ipString string, bitset []bool) (bool, uint32) {
+	ipAsInt, err := ipStringToInt(ipString)
+
+	if err == nil {
+		return !bitset[ipAsInt], ipAsInt
+	} else {
+		return false, 0
+	}
 }
 
 // ipStringToInt represents IPv4-address string as a 4-byte unsigned integer since
